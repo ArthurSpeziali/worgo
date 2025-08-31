@@ -11,9 +11,14 @@ func main() {
 	preset := optparser.OptionList{
 		{Name: "export", Type: "boolean"},
 		{Name: "counter", Type: "integer"},
+		{Name: "print", Type: "boolean"},
+		{Name: "list", Type: "boolean", Alias: 'l'},
+		{Name: "wright", Type: "boolean", Alias: 'w'},
+		{Name: "olsen", Type: "boolean", Alias: 'o'},
 	}
 
-	// ARGS := []string{
+	// ARGS = []string{
+	// 	"--no-print",
 	// 	"--export",
 	// 	"--counter",
 	// 	"1",

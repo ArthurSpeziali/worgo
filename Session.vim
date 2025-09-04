@@ -13,12 +13,17 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +39 main.go
-badd +65 pkg/optparser/optparser.go
+badd +32 main.go
+badd +90 pkg/optparser/optparser.go
+badd +38 ~/.config/nvim/vim-plug/plugins.vim
+badd +24 ~/.config/nvim/lua/plugins/dap.lua
+badd +7 ~/.config/nvim/init.vim
+badd +1 ~/.cache/nvim/dap-go-stdout.log
+badd +1 ~/.cache/nvim/dap.log
+badd +213 ~/.cache/nvim/dap-go-stderr.log
+badd +1301 /usr/lib/go/src/runtime/panic.go
 argglobal
 %argdel
-tabnew +setlocal\ bufhidden=wipe
-tabrewind
 edit pkg/optparser/optparser.go
 argglobal
 balt main.go
@@ -32,31 +37,12 @@ setlocal foldnestmax=20
 setlocal foldenable
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 151 - ((18 * winheight(0) + 20) / 40)
+let s:l = 86 - ((24 * winheight(0) + 25) / 51)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 151
-normal! 064|
-tabnext
-edit main.go
-argglobal
-setlocal foldmethod=manual
-setlocal foldexpr=0
-setlocal foldmarker={{{,}}}
-setlocal foldignore=#
-setlocal foldlevel=0
-setlocal foldminlines=1
-setlocal foldnestmax=20
-setlocal foldenable
-silent! normal! zE
-let &fdl = &fdl
-let s:l = 34 - ((33 * winheight(0) + 20) / 40)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 34
-normal! 046|
+keepjumps 86
+normal! 021|
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

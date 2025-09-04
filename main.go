@@ -16,20 +16,24 @@ func presetOpts() optparser.OptionList {
 		{Name: "list", Type: "boolean", Alias: 'l'},
 		{Name: "wright", Type: "boolean", Alias: 'w'},
 		{Name: "olsen", Type: "boolean", Alias: 'o'},
+		{Name: "name", Type: "string", Alias: 'n'},
 	}
 }
 
 func main() {
 	preset := presetOpts()
-	// ARGS = []string{
-	// 	"--no-print",
-	// 	"--export",
-	// 	"--counter",
-	// 	"1",
-	// 	"--unknow",
-	// 	"download",
-	// }
+	ARGS = []string{
+		"--no-print",
+		"--export",
+		"--counter",
+		"1",
+		"--unknow",
+		"download",
+		"-lawn",
+		"hello world",
+		"cmd",
+	}
 
-	opts, params := optparser.Parser(ARGS, preset)
-	fmt.Printf("P: %q\nO: %q\n", params, opts)
+	opts, params, unknows := optparser.Parser(ARGS, preset)
+	fmt.Printf("P: %q\nO: %q\nU: %q\n", params, opts, unknows)
 }

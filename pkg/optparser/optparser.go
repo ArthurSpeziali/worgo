@@ -9,7 +9,7 @@ import (
 type OptionError struct {
 	Msg    string
 	Option string
-	Type   string
+	Code   int
 }
 func (e OptionError) Error() string {
 	return fmt.Sprintf("error in option: %v.\nmsg: %v.", e.Msg, e.Option)
@@ -34,14 +34,16 @@ func (l OptionList) existsName(sufix string) (Option, error) {
 		}
 	}
 
-	return l[0], OptionError{Msg: "sulfix does not exists", Option: sufix}
+	return l[0], OptionError{Msg: "option does not exists", Option: sufix, Code: 1}
 }
 
 func (l OptionList) GetAliases() ([]rune) {
 	var runeList []rune
 
 	for _, option := range l {
-		runeList = append(runeList, option.Alias)
+		if option.Alias != 0 {
+			runeList = append(runeList, option.Alias)
+		}
 	}
 
 	return runeList
@@ -62,7 +64,7 @@ func (l OptionList) DiffAlias(opts OptionList) error {
 	if last == 0 {
 		return nil
 	} else {
-		return OptionError{Msg: "option does not exists", Option: string(last)}
+		return OptionError{Msg: "alias does not exists in your list", Option: string(last), Code: 3}
 	}
 }
 
@@ -70,24 +72,59 @@ func (l OptionList) ParseAlias(sufix string) (OptionList, error) {
 	var returnOpts OptionList
 
 	for i, v := range l {
+		if v.Alias == 0 {
+			continue
+		}
+
 		for _, letter := range(sufix) {
 
 			if v.Alias == letter {
 				option := l[i]
 				option.Set("true")
 				returnOpts = append(returnOpts, option)
+
+				break
 			}
 
 		}
 	}
 	
-	return returnOpts, nil
+	if len(returnOpts) < len(sufix) {
+		var missingLetter rune
+		aliasses := returnOpts.GetAliases()
+
+		for _, v := range []rune(sufix) {
+			if !(slices.Contains(aliasses, v)) {
+				missingLetter = v
+				break
+			}
+		}
+
+		return returnOpts, OptionError{Msg: "alias does not exists in your list", Option: string(missingLetter), Code: 3}
+
+	} else if len(returnOpts) > 0 {
+		return returnOpts, l.DiffAlias(returnOpts)
+	} else {
+		return returnOpts, OptionError{Msg: "there is no alias in your list", Option: sufix, Code: 4}
+	}
+}
+
+func (l *OptionList) UniqueSlice() {
+	var duplicate OptionList
+
+	for _, v := range *l {
+		if !(slices.Contains(duplicate, v)) {
+			duplicate = append(duplicate, v)
+		}
+	}	
+
+	*l = duplicate
 }
 
 
-func Parser(args []string, preset OptionList) (OptionList, []string) {
+func Parser(args []string, preset OptionList) (OptionList, []string, []string) {
 	var params []string
-	// var unknows []string
+	var unknows []string
 	var value bool
 	var opts OptionList
 	var option Option
@@ -107,6 +144,7 @@ func Parser(args []string, preset OptionList) (OptionList, []string) {
 			if err == nil {
 				option = res
 			} else {
+				unknows = append(unknows, v)
 				continue
 			}
 
@@ -123,14 +161,52 @@ func Parser(args []string, preset OptionList) (OptionList, []string) {
 			if err == nil {
 				option = res
 			} else {
+				unknows = append(unknows, v)
 				continue
 			}
 		} else if len(v) > 1 && v[:1] == "-" {
-			sufix := v[1:]
+			var semiOpts OptionList
+			var semiUnkws []string
+			var setValue bool
 
-			res, _ := preset.ParseAlias(sufix)
-			opts = append(opts, res...)
-			continue
+			sufix := v[1: len(v) - 1]
+			last := []string{
+				"-" + string(v[len(v) - 1]),
+			}
+
+			if sufix != "" {
+				semiOpts, _, semiUnkws = Parser(last, preset)
+
+				if len(semiUnkws) == 0 {
+					option = semiOpts[0]
+				}
+			} else {
+				sufix = last[0][1:]
+				setValue = true
+			}
+			unknows = append(unknows, semiUnkws...)
+
+
+			res, err := preset.ParseAlias(sufix)
+			if len(res) > 0 {
+				if setValue {
+					option = res[0]
+					value = true
+				}
+	
+				opts = append(opts, 
+					append(semiOpts, res...)...
+				)
+
+			}
+
+			if e, ok := err.(OptionError); ok {
+				unknows = append(unknows, "-" + e.Option)
+			}
+
+			if setValue {
+				continue
+			}
 		} else {
 			params = append(params, v)
 			continue
@@ -145,28 +221,6 @@ func Parser(args []string, preset OptionList) (OptionList, []string) {
 		}
 	}
 
-	return opts, params
+	opts.UniqueSlice()
+	return opts, params, unknows
 }
-
-// func substractSlices[T comparable](first []T, second []T) []T {
-// 	var found bool
-// 	var more []T
-
-// 	for _, v := range first {
-// 		found = false
-
-// 		for j, w := range second {
-// 			if v == w {
-// 				second = append(second[:j], second[j+1:]...)
-// 				found = true
-// 				break
-// 			} 
-// 		}
-
-// 		if !found {
-// 			more = append(more, v)
-// 		}
-// 	}
-
-// 	return append(second, more...)
-// }

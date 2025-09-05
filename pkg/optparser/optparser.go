@@ -3,7 +3,9 @@ package optparser
 
 import (
 	"fmt"
+	"strings"
 	"slices"
+	"strconv"
 )
 
 type OptionError struct {
@@ -20,11 +22,51 @@ type Option struct {
 	Name    string
 	Alias   rune
 	Type    string
-	Value   string
+	Value   any
 }
-func (o *Option) Set(value string) {
+func (o *Option) Set(value any) {
 	o.Value = value
 }
+
+func (o *Option) Typer() error {
+	var value string = fmt.Sprintf("%v", o.Value)
+
+	switch o.Type {
+	case "string":
+		// Nothing, continues the same, only converts in string
+		o.Set(value)
+		return nil
+
+	case "boolean":
+		Fvalue := strings.ToLower(value)	
+
+		if Fvalue == "true" {
+			o.Set(true)
+			return nil
+
+		} else if Fvalue == "false" {
+			o.Set(false)
+			return nil
+
+		} else {
+			return OptionError{Msg: "type does not match in boolean", Option: o.Name, Code: 5}
+		}
+
+	case "integer":
+		res, err := strconv.Atoi(value)
+		if err == nil {
+			o.Set(res)
+			return nil
+		} else {
+			return OptionError{Msg: "type does not match in integer", Option: o.Name, Code: 6}
+		}
+
+	default:
+		return OptionError{Msg: "type does not exists", Option: o.Name, Code: 7}
+	}
+
+}
+
 
 type OptionList []Option
 func (l OptionList) existsName(sufix string) (Option, error) {
@@ -111,15 +153,34 @@ func (l OptionList) ParseAlias(sufix string) (OptionList, error) {
 
 func (l *OptionList) UniqueSlice() {
 	var duplicate OptionList
+	slices.Reverse(*l)
 
 	for _, v := range *l {
-		if !(slices.Contains(duplicate, v)) {
+		fun := func(o Option) bool {
+			return o.Name == v.Name
+		}
+
+		if !(slices.ContainsFunc(duplicate, fun)) {
 			duplicate = append(duplicate, v)
 		}
 	}	
 
+	slices.Reverse(duplicate)
 	*l = duplicate
 }
+
+func (l *OptionList) TyperAll() error {
+
+	for i := range *l {
+		err := (*l)[i].Typer() 
+		if err !=  nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 
 
 func Parser(args []string, preset OptionList) (OptionList, []string, []string) {
@@ -128,6 +189,8 @@ func Parser(args []string, preset OptionList) (OptionList, []string, []string) {
 	var value bool
 	var opts OptionList
 	var option Option
+	splitEqual(&args)
+
 
 	for _, v := range args {
 
@@ -223,4 +286,18 @@ func Parser(args []string, preset OptionList) (OptionList, []string, []string) {
 
 	opts.UniqueSlice()
 	return opts, params, unknows
+}
+
+func splitEqual(slice *[]string) {
+	for i, str := range *slice {
+		occ := strings.Index(str, "=")
+
+		if occ != -1 {
+			head := str[:occ]
+			tail := str[occ+1:]
+
+			(*slice)[i] = head
+			*slice = slices.Insert(*slice, i+1, tail)
+		}
+	}
 }

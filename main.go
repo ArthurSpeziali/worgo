@@ -29,11 +29,14 @@ func main() {
 		"1",
 		"--unknow",
 		"download",
-		"-lawn",
+		"-lawon",
 		"hello world",
 		"cmd",
 	}
 
 	opts, params, unknows := optparser.Parser(ARGS, preset)
 	fmt.Printf("P: %q\nO: %q\nU: %q\n", params, opts, unknows)
+
+	opts.TyperAll()
+	fmt.Printf("\nF:%q", opts)
 }

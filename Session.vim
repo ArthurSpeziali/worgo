@@ -13,8 +13,8 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +32 main.go
-badd +163 pkg/optparser/optparser.go
+badd +41 main.go
+badd +167 pkg/optparser/optparser.go
 badd +38 ~/.config/nvim/vim-plug/plugins.vim
 badd +24 ~/.config/nvim/lua/plugins/dap.lua
 badd +7 ~/.config/nvim/init.vim
@@ -23,8 +23,10 @@ badd +1 ~/.cache/nvim/dap.log
 badd +213 ~/.cache/nvim/dap-go-stderr.log
 badd +1301 /usr/lib/go/src/runtime/panic.go
 badd +293 /usr/lib/go/src/runtime/proc.go
+badd +21 pkg/grammar/grammar.go
 argglobal
 %argdel
+tabnew +setlocal\ bufhidden=wipe
 tabnew +setlocal\ bufhidden=wipe
 tabrewind
 edit main.go
@@ -40,12 +42,32 @@ setlocal foldnestmax=20
 setlocal foldenable
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 28 - ((27 * winheight(0) + 29) / 58)
+let s:l = 17 - ((8 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 28
-normal! 020|
+keepjumps 17
+normal! 0
+tabnext
+edit pkg/grammar/grammar.go
+argglobal
+balt main.go
+setlocal foldmethod=manual
+setlocal foldexpr=0
+setlocal foldmarker={{{,}}}
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldenable
+silent! normal! zE
+let &fdl = &fdl
+let s:l = 40 - ((35 * winheight(0) + 19) / 38)
+if s:l < 1 | let s:l = 1 | endif
+keepjumps exe s:l
+normal! zt
+keepjumps 40
+normal! 022|
 tabnext
 edit pkg/optparser/optparser.go
 argglobal
@@ -59,11 +81,11 @@ setlocal foldnestmax=20
 setlocal foldenable
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 167 - ((24 * winheight(0) + 29) / 58)
+let s:l = 12 - ((11 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 167
+keepjumps 12
 normal! 0
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
